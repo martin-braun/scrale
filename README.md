@@ -4,15 +4,15 @@ LÖVE library to scale and center your desired low resolution game the best it c
 Example:
 
 ```lua
-scrale = require "lib.scrale" -- screen scaler
+scrale = require "scrale" -- screen scaler
 
 function love.load()
     scrale.init(800, 600, { -- use the same like in conf.lua window settings, but configure conf.lua to use fullscreentype "desktop"
-  		fillHorizontally = false, -- fill horizontally on fullscreen
-  		fillVertically = false, -- fill vertically on fullscreen
-  		scaleFilter = "nearest",
-  		scaleAnisotropy = 1,
-	  }) -- options are optional, defaults are shown here
+	    fillHorizontally = false, -- fill horizontally on fullscreen
+	    fillVertically = false, -- fill vertically on fullscreen
+	    scaleFilter = "nearest",
+	    scaleAnisotropy = 1,
+    }) -- options are optional, defaults are shown here
     -- Interesting: The window will scale up by one or more multipliers of 2 to fit your desktop as best as possible
     -- Also interesting: This lib will work on mobile, too. (Incl. Android)
 end
