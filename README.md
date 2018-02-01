@@ -18,7 +18,7 @@ function love.load()
 end
 
 function love.draw(dt)
-    scrale.drawOnCanvas() -- tell it to draw on canvas
+    scrale.drawOnCanvas(true) -- tell it to draw on canvas, true to clear canvas first
 
     -- draw anything here
 
