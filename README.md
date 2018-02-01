@@ -14,7 +14,6 @@ function love.load()
 	    scaleAnisotropy = 1,
     }) -- options are optional, defaults are shown here
     -- Interesting: The window will scale up by one or more multipliers of 2 to fit your desktop as best as possible
-    -- Also interesting: This lib will work on mobile, too. (Incl. Android)
 end
 
 function love.draw(dt)
