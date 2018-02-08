@@ -1,5 +1,5 @@
 ﻿local scrale = {
-  _VERSION     = "scrale v0.1.5",
+  _VERSION     = "scrale v0.2.0",
   _DESCRIPTION = "Scale and center your desired low resolution game the best it can be in desktop window / desktop fullscreen on Mac / PC or in iOS / Android mobile devices based on native resolution",
   _URL         = "",
   _LICENSE     = [[
@@ -47,16 +47,24 @@ function scrale.getScale() return scrale.slX, scrale.slY end
 scrale.oX, scrale.oY = 0, 0 -- offset to canvas (not required for drawing)
 function scrale.getCanvasOffset() return scrale.oX, scrale.oY end
 
-	function scrale.getCanvasSize() -- get the screen size of the canvas only, useful for camera settings
-		if scrale.canvas then
-			return scrale.canvas:getDimensions()
-		end
-		return nil, nil
+scrale.m = false
+function scrale.isMobile() return scrale.m end -- Android or iOS?
+
+function scrale.getCanvasSize() -- get the screen size of the canvas only, useful for camera settings
+	if scrale.canvas then
+		return scrale.canvas:getDimensions()
 	end
+	return nil, nil
+end
 
-function scrale.init(gameWidth, gameHeight, options)
+function scrale.init(options)
 
-	gWorg, gHorg = gameWidth, gameHeight	
+	local lc = { modules = {}, window = {} }
+	assert(love.conf, "Please provide a proper love.conf file and make sure it contains window.width and window.height.")
+	love.conf(lc)
+	assert(lc.window.width and lc.window.height, "Please provide a proper love.conf file and make sure it contains window.width and window.height.")
+	gWorg, gHorg = lc.window.width, lc.window.height
+
 	if type(options) == "table" then -- options
 		for k, v in pairs(options) do
 			opts[k] = v
@@ -64,9 +72,7 @@ function scrale.init(gameWidth, gameHeight, options)
 	end
 	love.graphics.setDefaultFilter(opts.scaleFilter, opts.scaleFilter, opts.scaleAnisotropy)
 	
-	assert(gameWidth, "Missing #1 argument (game width) on scrale.init(). Please pass the window width from conf.lua and keep it consitent.")
-	assert(gameHeight, "Missing #2 argument (game height) on scrale.init(). Please pass the window height from conf.lua and keep it consitent.")
-	local gW, gH = gameWidth, gameHeight -- game size = window size
+	local gW, gH = gWorg, gHorg -- game size = window size
 	local os = love.system.getOS() -- operating system
 	local m = os == "Android" or os == "iOS" -- mobile?	
 	local wW, wH, flags = love.window.getMode() -- window size + flags
@@ -127,6 +133,7 @@ function scrale.init(gameWidth, gameHeight, options)
 	scrale.gW, scrale.gH = gW, gH
 	scrale.slX, scrale.slY = slX, slY
 	scrale.oX, scrale.oY = oX, oY
+	scrale.m = m
 end
 
 function scrale.setFullscreen(fullscreen, fullscreenType)
