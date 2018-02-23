@@ -1,5 +1,5 @@
 ﻿local scrale = {
-  _VERSION     = "scrale v0.2.1",
+  _VERSION     = "scrale v0.3.0",
   _DESCRIPTION = "Scale and center your desired low resolution game the best it can be in desktop window / desktop fullscreen on Mac / PC or in iOS / Android mobile devices based on native resolution",
   _URL         = "",
   _LICENSE     = [[
@@ -31,6 +31,7 @@ scrale.canvas = nil
 
 local gWorg, gHorg
 local opts = {
+	backgroundColor = { 0, 0, 0, 255},
 	fillVertically = false,
 	fillHorizontally = false,
 	scaleFilter = "nearest",
@@ -39,7 +40,6 @@ local opts = {
 }
 
 scrale.gW, scrale.gH = 800, 600 -- game size
-function scrale.getGameSize() return scrale.gW, scrale.gH end -- respects filling, helps for drawing
 
 scrale.slX, scrale.slY = 1, 1 -- scale factor
 function scrale.getScale() return scrale.slX, scrale.slY end
@@ -50,7 +50,7 @@ function scrale.getCanvasOffset() return scrale.oX, scrale.oY end
 scrale.m = nil
 function scrale.isMobile() return scrale.m end -- Android or iOS?
 
-function scrale.getCanvasSize() -- get the screen size of the canvas only, useful for camera settings
+function scrale.getCanvasSize() -- get the size of the canvas only (game size), useful for camera settings and drawing
 	if scrale.canvas then
 		return scrale.canvas:getDimensions()
 	end
@@ -148,7 +148,9 @@ end
 
 function scrale.drawOnCanvas(clear)
   uc(scrale.canvas)
-  if clear then love.graphics.clear({ 0, 0, 0, 255 }) end
+  if clear then 
+		love.graphics.clear(opts.backgroundColor) 
+	end
 end
 
 function scrale.screenToGame(x, y) -- for instance to solve click positions
