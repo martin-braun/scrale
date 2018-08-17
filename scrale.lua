@@ -1,7 +1,7 @@
 ﻿local scrale = {
-  _VERSION     = "scrale v0.3.0",
+  _VERSION     = "scrale v0.4.2",
   _DESCRIPTION = "Scale and center your desired low resolution game the best it can be in desktop window / desktop fullscreen on Mac / PC or in iOS / Android mobile devices based on native resolution",
-  _URL         = "",
+  _URL         = "https://rebrand.ly/marty",
   _LICENSE     = [[
     MIT LICENSE
     Copyright (c) 2018 Martin Braun
@@ -25,7 +25,7 @@
 }
 
 
-local uc = canvas and canvas.use or love.graphics.setCanvas
+local lg, uc = love.graphics, love.graphics.setCanvas
 
 scrale.canvas = nil
 
@@ -36,7 +36,8 @@ local opts = {
 	fillHorizontally = false,
 	scaleFilter = "nearest",
 	scaleAnisotropy = 1,
-	blendMode = { "alpha", "premultiplied" }
+	blendMode = { "alpha", "premultiplied" },
+	dontTryWindowUpscale = false
 }
 
 scrale.gW, scrale.gH = 800, 600 -- game size
@@ -57,6 +58,12 @@ function scrale.getCanvasSize() -- get the size of the canvas only (game size), 
 	return nil, nil
 end
 
+scrale.aftdrfns = {}
+function scrale.execAfterDraw(func)
+	assert(type(func) == "function", "Please add only functions to the after draw function collection.")
+	table.insert(scrale.aftdrfns, func)
+end
+
 function scrale.init(options)
 
 	local lc = { modules = {}, window = {} }
@@ -70,25 +77,30 @@ function scrale.init(options)
 			opts[k] = v
 		end
 	end
-	love.graphics.setDefaultFilter(opts.scaleFilter, opts.scaleFilter, opts.scaleAnisotropy)
-	
+	lg.setDefaultFilter(opts.scaleFilter, opts.scaleFilter, opts.scaleAnisotropy)
+
 	local gW, gH = gWorg, gHorg -- game size = window size
 	local os = love.system.getOS() -- operating system
-	local m = os == "Android" or os == "iOS" -- mobile?	
+	local m = os == "Android" or os == "iOS" -- mobile?
 	local wW, wH, flags = love.window.getMode() -- window size + flags
 	local sW, sH -- screen size
 	local slX, slY = 1, 1 -- scale factor
 	local oX, oY = 0, 0 -- offset
+	local hdpi = os == "iOS" -- highdpi on iPhone devices
 	if not m then assert(flags.fullscreentype == "desktop", "Only desktop fullscreen is supported.") end
-	
+
 	if flags.fullscreen or m then
 
-		sW, sH = love.graphics.getDimensions()
+		sW, sH = lg.getDimensions()
+		if hdpi then
+			sW = math.ceil(sW * 2)
+			sH = math.ceil(sH * 2)
+		end
 
 		-- calc game size
 		if opts.fillHorizontally and opts.fillVertically then
 			gW, gH = sW, sH
-		elseif opts.fillHorizontally then			
+		elseif opts.fillHorizontally then
 			local ngW = gH * (sW / sH)
 			gW = ngW > gW and ngW or gW -- on fill: only increase, not decrease
 		elseif opts.fillVertically then
@@ -99,15 +111,15 @@ function scrale.init(options)
 		slX, slY = sW / gW, sH / gH -- calc scale factor
 		if slX < slY then -- keep aspect ratio
 			slY = slX
-		else 
+		else
 			slX = slY
 		end
 
-		oX, oY = (sW - gW * slX) / 2, (sH - gH * slY) / 2 -- calc offset
-
 		if m then
-			love.window.setMode(sW, sH, { fullscreen = false }) -- mobile: no fs suggested
+			love.window.setMode(sW, sH, { fullscreen = true, highdpi = hdpi })
 		end
+
+		oX, oY = (sW - gW * slX) / 2, (sH - gH * slY) / 2 -- calc offset
 
 	else -- window mode on desktop
 
@@ -116,19 +128,22 @@ function scrale.init(options)
 		local updW = gW ~= wW or gH ~= wH -- update window to game res when not matching window res
 		wW, wH = gW, gH -- window size = game size
 
-		while wW * 2 < sW and wH * 2 < sH do -- resize window for better fit
-			wW, wH = wW * 2, wH * 2
-			slX, slY = slX * 2, slY * 2
-			updW = true -- update window when window res increased
+		if not opts.dontTryWindowUpscale then
+			while wW * 2 < sW and wH * 2 < sH do -- resize window for better fit
+				wW, wH = wW * 2, wH * 2
+				slX, slY = slX * 2, slY * 2
+				updW = true -- update window when window res increased
+			end
 		end
 
 		if updW then
-			love.window.setMode(wW, wH, { fullscreen = false }) -- sorry for the flickering
+			love.window.setMode(wW, wH, { fullscreen = false, highdpi = hdpi }) -- sorry for the flickering
 		end
 
 	end
-	
-	scrale.canvas = love.graphics.newCanvas(gW, gH)
+
+	scrale.canvas = lg.newCanvas(gW, gH)
+	love.graphics.setDefaultFilter(opts.scaleFilter, opts.scaleFilter, opts.scaleAnisotropy)
 	scrale.canvas:setFilter(opts.scaleFilter, opts.scaleFilter, opts.scaleAnisotropy)
 	scrale.gW, scrale.gH = gW, gH
 	scrale.slX, scrale.slY = slX, slY
@@ -148,8 +163,8 @@ end
 
 function scrale.drawOnCanvas(clear)
   uc(scrale.canvas)
-  if clear then 
-		love.graphics.clear(opts.backgroundColor) 
+  if clear then
+		lg.clear(opts.backgroundColor)
 	end
 end
 
@@ -161,12 +176,13 @@ function scrale.gameToScreen(x, y)
   return x * scrale.slX + scrale.oX, y * scrale.slY + scrale.oY
 end
 
-function scrale.draw()	
+function scrale.draw()
 	uc(nil)
-	love.graphics.setColor({ 255, 255, 255, 255 })
-	love.graphics.setBlendMode(opts.blendMode[1], opts.blendMode[2])
-	love.graphics.draw(scrale.canvas, scrale.oX, scrale.oY, 0, scrale.slX, scrale.slY, 0, 0, 0, 0)
-	love.graphics.setBlendMode("alpha")
+	lg.setColor({ 255, 255, 255, 255 })
+	lg.setBlendMode(opts.blendMode[1], opts.blendMode[2])
+	lg.draw(scrale.canvas, scrale.oX, scrale.oY, 0, scrale.slX, scrale.slY, 0, 0, 0, 0)
+	lg.setBlendMode("alpha")
+	for i = 1, #scrale.aftdrfns do scrale.aftdrfns[i]() end
 end
 
 return scrale
