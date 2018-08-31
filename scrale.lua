@@ -1,5 +1,5 @@
-﻿local scrale = {
-  _VERSION     = "scrale v0.4.2",
+local scrale = {
+  _VERSION     = "scrale v0.5.0",
   _DESCRIPTION = "Scale and center your desired low resolution game the best it can be in desktop window / desktop fullscreen on Mac / PC or in iOS / Android mobile devices based on native resolution",
   _URL         = "https://rebrand.ly/marty",
   _LICENSE     = [[
@@ -116,7 +116,7 @@ function scrale.init(options)
 		end
 
 		if m then
-			love.window.setMode(sW, sH, { fullscreen = true, highdpi = hdpi })
+			love.window.setMode(sW, sH, { fullscreen = flags.fullscreen, highdpi = hdpi })
 		end
 
 		oX, oY = (sW - gW * slX) / 2, (sH - gH * slY) / 2 -- calc offset
@@ -137,7 +137,7 @@ function scrale.init(options)
 		end
 
 		if updW then
-			love.window.setMode(wW, wH, { fullscreen = false, highdpi = hdpi }) -- sorry for the flickering
+			love.window.setMode(wW, wH, { highdpi = hdpi }) -- sorry for the flickering
 		end
 
 	end
