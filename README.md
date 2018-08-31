@@ -6,11 +6,11 @@ Your game has to provide a valid conf.lua with `window.width` and `window.height
 ```lua
 
 	function love.conf(t)
-	    t.window.width = 512                  -- This is your game width. Scrale will read it.
-	    t.window.height = 320                 -- This is your game height. Scrale will read it.
+	    t.window.width = 512                                             -- This is your game width. Scrale will read it.
+	    t.window.height = 320                                            -- This is your game height. Scrale will read it.
             -- Interesting: The window will scale up by one or more multipliers of 2 to fit your desktop as best as possible
-	    t.window.fullscreen = false           -- Scrale will also support fullscreen on start
-	    t.window.fullscreentype = "desktop"   -- "desktop" fullscreen is required for scrale
+	    t.window.fullscreen = love._os == "Android" or love._os == "iOS" -- Fullscreen on mobile
+	    t.window.fullscreentype = "desktop"                              -- "desktop" fullscreen is required for scrale
 	end
 
 ```
