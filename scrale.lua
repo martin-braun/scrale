@@ -178,7 +178,7 @@ end
 
 function scrale.draw()
 	uc(nil)
-	lg.setColor({ 255, 255, 255, 255 })
+	lg.setColor(255, 255, 255, 255)
 	lg.setBlendMode(opts.blendMode[1], opts.blendMode[2])
 	lg.draw(scrale.canvas, scrale.oX, scrale.oY, 0, scrale.slX, scrale.slY, 0, 0, 0, 0)
 	lg.setBlendMode("alpha")
