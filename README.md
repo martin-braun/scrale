@@ -11,7 +11,7 @@ Your game has to provide a valid conf.lua with `window.width` and `window.height
         -- Interesting: The window will scale up by one or more multipliers of 2 to fit your desktop as best as possible
         t.window.fullscreen = love._os == "Android" or love._os == "iOS" -- Fullscreen on mobile
         t.window.fullscreentype = "desktop"                              -- "desktop" fullscreen is required for scrale
-        t.window.hdpi = false                                            -- Disable hdpi by default and let scrale change it for iOS devices
+        t.window.hdpi = love._os == "iOS"                                -- Enable hdpi on iOS devices
     end
 
 ```

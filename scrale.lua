@@ -1,5 +1,5 @@
 local scrale = {
-  _VERSION     = "scrale v0.5.0",
+  _VERSION     = "scrale v0.6.0",
   _DESCRIPTION = "Scale and center your desired low resolution game the best it can be in desktop window / desktop fullscreen on Mac / PC or in iOS / Android mobile devices based on native resolution",
   _URL         = "https://rebrand.ly/marty",
   _LICENSE     = [[
@@ -86,24 +86,19 @@ function scrale.init(options)
 	local sW, sH -- screen size
 	local slX, slY = 1, 1 -- scale factor
 	local oX, oY = 0, 0 -- offset
-	local hdpi = os == "iOS" -- highdpi on iPhone devices
+	local hdpi = flags.highdpi -- highdpi
 	if not m then assert(flags.fullscreentype == "desktop", "Only desktop fullscreen is supported.") end
 
 	if flags.fullscreen or m then
 
 		sW, sH = lg.getDimensions()
-		if hdpi then
-			sW = math.ceil(sW * 2)
-			sH = math.ceil(sH * 2)
-		end
 
 		-- calc game size
-		if opts.fillHorizontally and opts.fillVertically then
-			gW, gH = sW, sH
-		elseif opts.fillHorizontally then
+		if opts.fillHorizontally then
 			local ngW = gH * (sW / sH)
 			gW = ngW > gW and ngW or gW -- on fill: only increase, not decrease
-		elseif opts.fillVertically then
+		end
+		if opts.fillVertically then
 			local ngH = gW * (sH / sW)
 			gH = ngH > gH and ngH or gH -- on fill: only increase, not decrease
 		end
